@@ -1,0 +1,10 @@
+# Configuration et icônes personnelles : jamais publiées
+js/config.local.js
+img/sites/*
+!img/sites/.gitkeep
+
+# Paquets générés
+*.zip
+*.xpi
+web-ext-artifacts/
+node_modules/

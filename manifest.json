@@ -1,0 +1,52 @@
+{
+  "manifest_version": 2,
+  "name": "Bento New Tab",
+  "version": "1.0.0",
+  "description": "Page de nouvel onglet en bento : raccourcis, météo, échéances, actus cyber et DevOps, alertes CERT-FR et CISA KEV, Pomodoro et to-do. Thème clair et sombre.",
+  "homepage_url": "https://github.com/salasss/bento-newtab",
+  "icons": {
+    "48": "img/icon-48.png",
+    "96": "img/icon-96.png",
+    "128": "img/icon-128.png"
+  },
+  "chrome_url_overrides": {
+    "newtab": "newtab.html"
+  },
+  "chrome_settings_overrides": {
+    "homepage": "newtab.html"
+  },
+  "background": {
+    "scripts": ["js/background.js"],
+    "persistent": false
+  },
+  "permissions": [
+    "storage",
+    "alarms",
+    "notifications",
+    "https://api.open-meteo.com/*",
+    "https://geocoding-api.open-meteo.com/*",
+    "https://feeds.feedburner.com/*",
+    "https://www.bleepingcomputer.com/*",
+    "https://krebsonsecurity.com/*",
+    "https://www.it-connect.fr/*",
+    "https://www.zataz.com/*",
+    "https://www.lemondeinformatique.fr/*",
+    "https://www.cybermalveillance.gouv.fr/*",
+    "https://thenewstack.io/*",
+    "https://devops.com/*",
+    "https://github.blog/*",
+    "https://www.docker.com/*",
+    "https://www.hashicorp.com/*",
+    "https://cert.cyber.gouv.fr/*",
+    "https://www.cisa.gov/*"
+  ],
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "bento-newtab@salasss.github.io",
+      "strict_min_version": "128.0",
+      "data_collection_permissions": {
+        "required": ["none"]
+      }
+    }
+  }
+}
