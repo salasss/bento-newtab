@@ -19,7 +19,7 @@ Pensée pour les étudiants et alternants en informatique / cybersécurité, mai
 
 | Tuile | Ce qu'elle fait |
 |---|---|
-| Raccourcis | Sites groupés par thème, icône de chaque site (ou pastille avec l'initiale) |
+| Raccourcis | Sites groupés par thème, icône de chaque site (ou pastille avec l'initiale) ; bouton **+** pour ajouter un site à un groupe, **×** pour le retirer |
 | Recherche | Google par défaut ; raccourcis `yt`, `gh`, `cve`, `ex`, `w`, `tr` (ex. `cve log4j`) ; `/` pour placer le curseur |
 | Météo | Conditions actuelles, prochaines heures, 5 jours (Open-Meteo, sans clé) ; ville modifiable d'un clic |
 | Échéances | Compte à rebours, prochaine échéance mise en avant, mention « à confirmer » |
@@ -63,6 +63,7 @@ Tout se règle dans un seul fichier, sans modifier le code :
 | `schoolWeeks`, `company`, `holidays` | Calendrier d'alternance (laisser `schoolWeeks: []` pour masquer) |
 | `labels` | Titres des tuiles Échéances et Progression |
 
+- **Bouton « + »** : les sites ajoutés depuis la page sont enregistrés dans le stockage de Firefox (pas dans les fichiers) et partagés entre les onglets. Pour les garder dans votre configuration ou les partager, recopiez-les dans `config.local.js`.
 - **Icônes locales** : déposer l'image dans `img/sites/` (dossier ignoré par Git) et l'indiquer avec `icon: 'mon-site.png'`.
 - **Nouvelle source d'actus** : ajouter aussi son domaine dans `permissions` de `manifest.json`. Utiliser l'adresse finale du flux, sans redirection vers un autre domaine.
 - **Couleurs** : toutes les couleurs des deux thèmes sont des variables en tête de `css/style.css`.

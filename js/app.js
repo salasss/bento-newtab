@@ -185,31 +185,88 @@ function main() {
       return u.protocol === 'https:' ? [`${u.origin}/apple-touch-icon.png`, `${u.origin}/favicon.ico`] : [];
     } catch (e) { return []; }
   }
+  // Raccourcis ajoutés avec le bouton « + » : stockés dans Firefox, rangés par nom de groupe
+  let customLinks = {};
+
+  function buildIcon(l) {
+    // Icône locale, sinon adresse fournie, sinon favicon du site, sinon pastille.
+    // Un site ajouté à la main tente toujours son favicon.
+    const sources = l.icon ? [`img/sites/${l.icon}`]
+      : (l.favicon ? [l.favicon] : ((C.favicons !== false || l.custom) ? faviconUrls(l.url) : []));
+    if (!sources.length) return letterIcon(l);
+    const img = h('img', { alt: '', decoding: 'async', referrerpolicy: 'no-referrer' });
+    const ico = h('div', { class: 'ico' }, img);
+    let i = 0;
+    const next = () => { if (i < sources.length) img.src = sources[i++]; else ico.replaceWith(letterIcon(l)); };
+    img.addEventListener('error', next);
+    img.addEventListener('load', () => { if (img.naturalWidth < 8) next(); });
+    next();
+    return ico;
+  }
+  function linkTile(l) {
+    return h('a', { class: 'sc', href: l.url, title: l.title || l.name }, buildIcon(l), h('span', null, l.name));
+  }
+  function customTile(groupName, l) {
+    return h('div', { class: 'sc-wrap' }, linkTile({ ...l, custom: true }),
+      h('button', {
+        type: 'button', class: 'rm', title: `Retirer « ${l.name} »`, 'aria-label': `Retirer ${l.name}`,
+        onclick: () => removeCustomLink(groupName, l.id),
+      }, '×'));
+  }
   function renderShortcuts() {
-    const root = $('#groups');
-    for (const g of C.groups) {
-      const tiles = g.links.map((l) => {
-        let ico;
-        // Icône locale, sinon adresse fournie, sinon favicon du site (si activé), sinon pastille
-        const sources = l.icon ? [`img/sites/${l.icon}`] : (l.favicon ? [l.favicon] : (C.favicons !== false ? faviconUrls(l.url) : []));
-        if (sources.length) {
-          const img = h('img', { alt: '', decoding: 'async', referrerpolicy: 'no-referrer' });
-          ico = h('div', { class: 'ico' }, img);
-          let i = 0;
-          const next = () => { if (i < sources.length) img.src = sources[i++]; else ico.replaceWith(letterIcon(l)); };
-          img.addEventListener('error', next);
-          img.addEventListener('load', () => { if (img.naturalWidth < 8) next(); });
-          next();
-        } else {
-          ico = letterIcon(l);
-        }
-        return h('a', { class: 'sc', href: l.url, title: l.title || l.name }, ico, h('span', null, l.name));
-      });
-      const grp = h('div', { class: 'group' },
+    $('#groups').replaceChildren(...C.groups.map((g) => {
+      const added = (Array.isArray(customLinks[g.name]) ? customLinks[g.name] : [])
+        .filter((l) => l && typeof l.name === 'string' && safeUrl(l.url));
+      const addBtn = h('button', {
+        type: 'button', class: 'sc add', title: `Ajouter un raccourci à « ${g.name} »`,
+        onclick: () => openAddForm(g.name),
+      }, h('div', { class: 'ico add-ico' }, '+'), h('span', null, 'Ajouter'));
+      return h('div', { class: 'group' },
         h('p', { class: 'group-title' }, g.name),
-        h('div', { class: 'tiles' }, tiles));
-      root.append(grp);
-    }
+        h('div', { class: 'tiles' }, g.links.map(linkTile), added.map((l) => customTile(g.name, l)), addBtn));
+    }));
+  }
+  async function saveCustomLinks() { await store.set('links:custom', customLinks); renderShortcuts(); }
+  function removeCustomLink(groupName, id) {
+    customLinks[groupName] = (customLinks[groupName] || []).filter((l) => l.id !== id);
+    if (!customLinks[groupName].length) delete customLinks[groupName];
+    saveCustomLinks();
+  }
+
+  // Formulaire d'ajout (adresse obligatoire, nom facultatif)
+  let addGroup = null;
+  function openAddForm(groupName) {
+    addGroup = groupName;
+    $('#add-group').textContent = groupName;
+    $('#add-url').value = ''; $('#add-name').value = ''; $('#add-err').hidden = true;
+    $('#add-pop').hidden = false;
+    $('#add-url').focus();
+  }
+  function closeAddForm() { $('#add-pop').hidden = true; addGroup = null; }
+  function setupAddForm() {
+    $('#add-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      let raw = $('#add-url').value.trim();
+      if (raw && !/^[a-z][a-z0-9+.-]*:/i.test(raw)) raw = 'https://' + raw;
+      const url = safeUrl(raw);
+      const host = url ? new URL(url).hostname : '';
+      if (!url || !(host.includes('.') || host === 'localhost')) {
+        const err = $('#add-err');
+        err.textContent = 'Adresse invalide : saisis par exemple github.com ou https://…';
+        err.hidden = false;
+        return;
+      }
+      const name = ($('#add-name').value.trim() || cap(host.replace(/^www\./, '').split('.')[0])).slice(0, 40);
+      (customLinks[addGroup] = customLinks[addGroup] || []).push({ id: Date.now().toString(36), name, url });
+      closeAddForm();
+      saveCustomLinks();
+    });
+    $('#add-cancel').addEventListener('click', closeAddForm);
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !$('#add-pop').hidden) closeAddForm(); });
+    document.addEventListener('mousedown', (e) => {
+      const pop = $('#add-pop');
+      if (!pop.hidden && !pop.contains(e.target) && !e.target.closest('.sc.add')) closeAddForm();
+    });
   }
 
   /* ---------------- Échéances ---------------- */
@@ -597,6 +654,7 @@ function main() {
       if (area !== 'local') return;
       if (ch.todos && ch.todos.newValue) { todos = ch.todos.newValue; renderTodos(); }
       if (ch.pomo && ch.pomo.newValue) { pomo = ch.pomo.newValue; syncPomoTimer(); renderPomo(); }
+      if (ch['links:custom']) { customLinks = ch['links:custom'].newValue || {}; renderShortcuts(); }
     });
   }
 
@@ -627,6 +685,10 @@ function main() {
 
   /* ---------------- Démarrage ---------------- */
   renderShortcuts();
+  setupAddForm();
+  store.get('links:custom', {}).then((v) => {
+    if (v && typeof v === 'object' && Object.keys(v).length) { customLinks = v; renderShortcuts(); }
+  });
   $('#dl-title').textContent = L.deadlines;
   $('#progress-label').textContent = L.progress;
   setupTheme();

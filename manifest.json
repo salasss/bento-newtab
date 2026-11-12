@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "Bento New Tab",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Page de nouvel onglet en bento : raccourcis, météo, échéances, actus cyber et DevOps, alertes CERT-FR et CISA KEV, Pomodoro et to-do. Thème clair et sombre.",
   "homepage_url": "https://github.com/salasss/bento-newtab",
   "icons": {

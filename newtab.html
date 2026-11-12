@@ -46,6 +46,18 @@
     <section class="bento">
       <article class="tile t-short" id="shortcuts-card" aria-label="Raccourcis">
         <div class="groups" id="groups"></div>
+        <div class="add-pop" id="add-pop" role="dialog" aria-label="Ajouter un raccourci" hidden>
+          <p class="add-title">Ajouter à <b id="add-group"></b></p>
+          <form id="add-form" autocomplete="off">
+            <input id="add-url" type="text" placeholder="Adresse, ex. github.com" aria-label="Adresse du site">
+            <input id="add-name" type="text" placeholder="Nom (facultatif)" maxlength="40" aria-label="Nom affiché">
+            <p class="add-err" id="add-err" hidden></p>
+            <div class="add-row">
+              <button type="button" class="btn ghost" id="add-cancel">Annuler</button>
+              <button type="submit" class="btn primary">Ajouter</button>
+            </div>
+          </form>
+        </div>
       </article>
 
       <article class="tile t-wx weather" id="weather-card" data-sky="cloud">
